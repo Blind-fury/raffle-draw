@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Raffle Draw</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    .raffle-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .raffle-ticket {
+      background: #ff6347;
+      color: white;
+      border: 2px solid white;
+      padding: 20px;
+      border-radius: 10px;
+      font-size: 1.5em;
+      text-align: center;
+      position: absolute;
+    }
+
+    .winner {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 3em;
+      text-align: center;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="raffle-container" id="raffleContainer"></div>
+  <div class="winner" id="winnerDisplay">🎉 WINNER 🎉</div>
+
+  <script>
+    let tickets = [];
+    const container = document.getElementById("raffleContainer");
+    const winnerDisplay = document.getElementById("winnerDisplay");
+
+    // Listen for messages from Wix
+    window.addEventListener("message", (event) => {
+      if (event.data.tickets) {
+        tickets = event.data.tickets;
+        displayTickets(tickets);
+      }
+      if (event.data.action === "shuffle") {
+        shuffleTickets();
+      }
+      if (event.data.action === "displayWinner") {
+        displayWinner(event.data.winner);
+      }
+    });
+
+    // Display raffle tickets
+    function displayTickets(tickets) {
+      container.innerHTML = ""; // Clear the container
+      tickets.forEach((ticket, index) => {
+        const div = document.createElement("div");
+        div.className = "raffle-ticket";
+        div.textContent = ticket;
+        div.style.left = `${Math.random() * 80}vw`;
+        div.style.top = `${Math.random() * 80}vh`;
+        div.id = `ticket-${index}`;
+        container.appendChild(div);
+      });
+    }
+
+    // Shuffle tickets animation
+    function shuffleTickets() {
+      gsap.to(".raffle-ticket", {
+        duration: 1,
+        x: () => Math.random() * 400 - 200,
+        y: () => Math.random() * 400 - 200,
+        stagger: 0.1,
+        repeat: 6,
+        onComplete: () => {
+          gsap.to(".raffle-ticket", { opacity: 0 });
+        },
+      });
+    }
+
+    // Display the winner
+    function displayWinner(winner) {
+      winnerDisplay.textContent = `🎉 WINNER: ${winner.ticket} 🎉`;
+      winnerDisplay.style.display = "block";
+      gsap.fromTo(
+        winnerDisplay,
+        { scale: 0 },
+        { scale: 1, duration: 0.5, ease: "bounce.out" }
+      );
+    }
+  </script>
+</body>
+</html>  
